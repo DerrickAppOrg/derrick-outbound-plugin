@@ -1,0 +1,11 @@
+{
+  "name": "derrick-outbound-plugin",
+  "owner": { "name": "Derrick", "url": "https://derrick-app.com" },
+  "plugins": [
+    {
+      "name": "derrick-outbound",
+      "source": "./",
+      "description": "Agent de prospection outbound autonome (sourcing, enrichissement Derrick, message à ta voix, séquence, apprentissage + lookalike)."
+    }
+  ]
+}

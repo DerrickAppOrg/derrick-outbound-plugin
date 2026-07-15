@@ -9,9 +9,14 @@ Deux briques : **Derrick** (la donnée B2B) + **ton outil d'envoi** (La Growth M
 
 ## Installation
 
+Dans Claude Code, deux commandes :
+
 ```
-/plugin install derrick-outbound@DerrickAppOrg/derrick-outbound-plugin
+/plugin marketplace add DerrickAppOrg/derrick-outbound-plugin
+/plugin install derrick-outbound@derrick-outbound-plugin
 ```
+
+La première ajoute ce repo comme source de plugins, la seconde installe l'agent.
 
 Débutant ? Passe par **Claude Cowork** → Customize → Add custom plugin.
 

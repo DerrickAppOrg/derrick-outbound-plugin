@@ -4,7 +4,5 @@
   "description": "Agent de prospection outbound autonome : trouve tes prospects, les enrichit, écrit un message à ta voix, prépare la séquence, et apprend de tes réponses. Data par Derrick, envoi via ton outil (La Growth Machine aujourd'hui).",
   "author": { "name": "Derrick", "url": "https://derrick-app.com" },
   "homepage": "https://derrick-app.com/recipes/auto-outreach",
-  "keywords": ["outbound", "prospection", "sales", "lead-generation", "derrick", "lagrowthmachine"],
-  "skills": "./skills",
-  "mcpServers": "./.mcp.json"
+  "license": "MIT"
 }
