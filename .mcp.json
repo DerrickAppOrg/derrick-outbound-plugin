@@ -1,0 +1,15 @@
+{
+  "//": "Les 2 briques du flow. L'utilisateur connecte SES comptes (ses propres clés) — jamais de secret dans ce repo.",
+  "mcpServers": {
+    "derrick": {
+      "//": "Moteur de données B2B (requis, plan Standard+ pour l'API/MCP).",
+      "type": "http",
+      "url": "https://app1.derrick-app.com/mcp"
+    },
+    "lagrowthmachine": {
+      "//": "Outil d'envoi (séquence multicanale). Optionnel : sinon export CSV / API.",
+      "type": "http",
+      "url": "https://mcpapp.lagrowthmachine.com/mcp"
+    }
+  }
+}
