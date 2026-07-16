@@ -9,16 +9,31 @@ Deux briques : **Derrick** (la donnée B2B) + **ton outil d'envoi** (La Growth M
 
 ## Installation
 
-Dans Claude Code, deux commandes :
+Dans Claude Code, deux commandes. **Lance-les une par une, l'une après l'autre** (collées ensemble, Claude Code les prend comme une seule commande et l'install échoue).
+
+**1. Ajouter ce repo comme source de plugins :**
 
 ```
-/plugin marketplace add DerrickAppOrg/derrick-outbound-plugin
+/plugin marketplace add https://github.com/DerrickAppOrg/derrick-outbound-plugin
+```
+
+**2. Installer l'agent depuis cette source :**
+
+```
 /plugin install derrick-outbound@derrick-outbound-plugin
 ```
 
-La première ajoute ce repo comme source de plugins, la seconde installe l'agent.
+⚠️ Garde bien l'URL `https://` complète dans la commande 1. Le raccourci `DerrickAppOrg/derrick-outbound-plugin` déclenche un clone SSH, qui échoue si tu n'as pas de clés SSH GitHub configurées.
 
-Débutant ? Passe par **Claude Cowork** → Customize → Add custom plugin.
+Débutant ? Passe par **Claude Cowork** → Customize → Add custom plugin, en collant le lien complet `https://github.com/DerrickAppOrg/derrick-outbound-plugin`.
+
+### Dépannage
+
+| Erreur | Ce qui se passe |
+|---|---|
+| `SSH authentication failed` / `Permission denied (publickey)` | Tu as utilisé le raccourci `owner/repo`, qui passe par SSH. Relance la commande 1 avec l'URL HTTPS complète. |
+| `Failed to load marketplace claude-plugins-official … Unrecognized key: displayName` | Rien à voir avec ce plugin : c'est la marketplace officielle d'Anthropic qui bloque le chargement. Retire-la avec `/plugin marketplace remove claude-plugins-official`, puis relance l'install. Tu pourras la rajouter plus tard. |
+| `API Error: 401` / `Invalid authentication credentials` | Ta session Claude a expiré. Fais `/login`, puis relance la commande. |
 
 ## Ce qu'il te faut
 - Un compte **Derrick** (plan Standard+ pour l'API/MCP) — le moteur de données. → https://derrick-app.com
@@ -26,7 +41,7 @@ Débutant ? Passe par **Claude Cowork** → Customize → Add custom plugin.
 - Tu connectes tes propres clés au premier lancement (elles restent chez toi, jamais dans ce repo).
 
 ## Utilisation
-Lance **`outbound-run`**. Un mini-onboarding te pose quelques questions (tes outils, ton ICP précis, ta voix —
+`outbound-run` est une **skill**, pas une commande à barre oblique : elle se lance en langage naturel dans le chat. Écris simplement **`lance outbound-run`** (ou "lance le flow de prospection outbound"). Un mini-onboarding te pose quelques questions (tes outils, ton ICP précis, ta voix —
 il analyse ta façon d'écrire pour te ressembler —, tes signaux, tes exclusions), puis il déroule :
 sourcing → enrichissement → messages → reco de séquence → préparation des leads. Tu valides à chaque étape
 sensible ; **rien ne part sans toi**.
