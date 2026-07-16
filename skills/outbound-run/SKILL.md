@@ -64,9 +64,23 @@ Pas de tool MCP pour lancer/créer une campagne → le launch reste un clic de l
 
 ## Phase 7 — BOUCLE → skill `outbound-weekly` ⛔ À PLANIFIER, PAS À MENTIONNER
 Review hebdo : réponses pos/neg/neutre × ledger → pertinence par signal/chemin → copy-lessons + amélioration + lookalike.
-⛔ **Une boucle qu'il faut penser à lancer à la main ne tourne jamais** — or c'est LE différenciateur du flow (« il apprend de vos réponses »). Donc **juste après le launch, PROPOSER de la planifier**, ne pas se contenter de l'évoquer :
-- **Si l'environnement du user permet les tâches planifiées** → proposer de créer la routine hebdo et la créer s'il accepte.
-- **Sinon** → le dire clairement et convenir d'un rappel : « relancez `outbound-weekly` chaque lundi ». Ne jamais laisser croire que la boucle tournera toute seule si rien ne la déclenche.
+⛔ **Une boucle qu'il faut penser à lancer à la main ne tourne jamais** — or c'est LE différenciateur du flow (« il apprend de vos réponses »). Donc **juste après le launch, PROPOSER de la planifier**, ne pas se contenter de l'évoquer.
+
+### ⛔ D'ABORD : tout ce qui s'appelle « cron » ne persiste PAS
+| Outil | Persistance | Verdict |
+|---|---|---|
+| Planificateur qui **écrit sur disque** (tâches planifiées de l'app Claude, type `scheduled-tasks`) | ✅ survit à la fermeture | **le seul valable** |
+| **`CronCreate`** (outil natif de session, présent notamment en terminal) | ❌ **en mémoire, « gone when Claude exits »**, expire après 7 jours | **INUTILISABLE pour une routine** |
+
+⛔ **Ne JAMAIS utiliser `CronCreate` pour la boucle hebdo, ni pour un batch « demain matin ».** Le job meurt à la fermeture du terminal. Le fait que l'outil EXISTE ne veut pas dire que l'environnement sait planifier : c'est le piège exact. **Vérifier la persistance, pas la présence de l'outil.**
+⛔ **Ne jamais annoncer « programmé / automatique »** pour un job de session sans écrire, dans la même phrase, qu'il **disparaît quand la session se ferme**. Un tableau qui affiche « auto » en face d'un job de session est un mensonge : l'user ferme son terminal et croit que ça tourne (cas réel observé).
+
+### Donc, dans l'ordre :
+1. **Planificateur persistant disponible** → proposer de créer la routine hebdo, la créer s'il accepte, **puis lui faire lancer un premier run à la main** (voir plus bas).
+2. **Pas de planificateur persistant** (cas courant en terminal) → **le dire franchement** : « je ne peux pas faire tourner ça tout seul depuis ici ». Deux options honnêtes à proposer :
+   - **cron système** : lui donner la ligne à coller dans son `crontab -e` (ex. `0 9 * * 1 cd <projet> && claude -p "lance outbound-weekly"`), qu'il installe lui-même ;
+   - **déclenchement manuel assumé** : « relancez `outbound-weekly` chaque lundi ».
+   Ne JAMAIS laisser croire que la boucle tournera si rien ne la déclenche.
 
 Le prompt de la routine doit être **auto-suffisant** (chaque run démarre sans mémoire de la conversation) et contenir :
 1. ⛔ **CHECK des connexions en étape 0** : appeler un tool léger de l'outil d'envoi → **si indisponible (run headless, auth expirée), prévenir le user et STOP**. Jamais de fallback, jamais d'analyse de mémoire.
