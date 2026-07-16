@@ -74,5 +74,11 @@ Toutes les voies (sauf la 6) convergent sur : gate → dédup → enrich → cop
 - Répondre/relancer un lead reste une action à confirmer (send_message = envoi réel) — la review PROPOSE, elle n'envoie pas seule.
 - Le critère d'apprentissage est la PERTINENCE (taux de réponse positive), pas le coût crédit.
 
+## ⛔ Dernière étape, obligatoire : horodater le run
+```
+date +"%s %Y-%m-%d" > ledger/.last-review
+```
+**Toujours**, même si le run n'a rien trouvé (0 réponse = un run quand même). C'est ce fichier que lit le hook `SessionStart` du plugin pour rappeler la review quand elle n'a pas tourné depuis 7 jours. Sans cette ligne, **le rappel ne s'éteint jamais** et devient du bruit qu'on apprend à ignorer.
+
 ## Sortie
 Un rapport hebdo : réponses classées (avec citations), taux de réponse positive par variant/signal/chemin, 2-3 améliorations de copy proposées, liste des lookalikes à sourcer. Loggé dans `ledger/` (reports).

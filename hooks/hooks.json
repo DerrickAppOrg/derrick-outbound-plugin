@@ -1,0 +1,17 @@
+{
+  "description": "Rappelle la review hebdo outbound quand elle n'a pas tourné depuis 7 jours (la boucle d'apprentissage n'a aucun autre déclencheur fiable).",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/check-review-due.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
