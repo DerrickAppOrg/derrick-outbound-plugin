@@ -12,6 +12,10 @@ description: >-
 
 ⛔ **Sourcer avec DERRICK, jamais via l'outil d'envoi.** Critère de choix du chemin = **PERTINENCE des leads**, pas le coût. Appels MCP Derrick **STRICTEMENT séquentiels**.
 
+## ⛔ Annoncer le COÛT RÉEL avant de dépenser
+- **`import_leads_from_prompt` = ~25 crédits PAR PAGE** (facturation à **1 crédit par lead retourné**, 25 leads/page). 4 pages ≈ **100 crédits**, PAS 4. Toujours annoncer `nb_pages × ~25` et attendre le go.
+- Règle générale : le coût s'annonce **par unité facturée réelle** (lead retourné, personne retournée, appel), jamais "par appel" quand le tool facture au résultat (cf. `find_staff_members` = 1cr/PERSONNE).
+
 ## Derrick d'abord, web_search Claude en secours (silencieux)
 Tout passe par Derrick en priorité. **Les 2 seules étapes nativement gérées par le web_search/WebFetch de Claude** (Derrick n'a pas d'équivalent) : **(a) parser une page d'agrégateur pour extraire les noms de boîtes**, et **(b) trouver le LinkedIn d'une entreprise sur son propre site**. Partout ailleurs : si un tool Derrick échoue/coince, **fallback silencieux sur le web_search Claude** et on livre la data propre — NE JAMAIS dire à l'user final "Derrick n'a pas trouvé" (il veut le résultat, pas les coulisses).
 
@@ -19,7 +23,7 @@ Tout passe par Derrick en priorité. **Les 2 seules étapes nativement gérées 
 ICP **précis** (de l'onboarding) : taille (fourchette) + spécialité/vertical + cible prioritaire + fallback de rôle + géo + langue. Refuser un ICP vague.
 
 ## Volume (limites)
-- **Premier sourcing** : viser **~50 leads qualifiés** (limite basse au 1er run, pour amorcer sans exploser le budget).
+- **Premier sourcing** : viser **~25 leads qualifiés**. Raison = **le temps du user** : l'enrichissement est en live et ses appels LinkedIn sont séquentiels par construction → l'attente croît linéairement avec le volume. 25 = un premier run qui aboutit dans un temps supportable ; au-delà, le user décroche avant la fin. Annoncer l'ordre de grandeur du temps AVANT de lancer.
 - **En boucle hebdo** (relancé par `outbound-weekly`) : **20 à 40 nouveaux** leads par cycle (dédup stricte vs `companies-seen`/`leads.jsonl`).
 
 ## Étape 0 — Dédup AVANT toute action (obligatoire)
@@ -38,14 +42,14 @@ Tout résultat de `search_companies` / `serp` doit être **vérifié contre le n
 
 ## Étape 1 — Choisir le CHEMIN (routage par use case, pertinence)
 - **Niche pointue / vertical précis** (ex. un type d'agence spécialisée) → **choix 3 (Google + agrégateurs)** : le plus pertinent sur une niche.
-- **Cible = secteur d'activité clair** → choix 1 (`import_leads_from_prompt`, 25cr, flou sur niche).
+- **Cible = secteur d'activité clair** → choix 1 (`import_leads_from_prompt`, **~25cr/page** = 1cr/lead, flou sur niche).
 - **Boîtes locales / présence physique** → choix 2 (`google_maps_by_prompt`).
 - **Liste de boîtes / ABM** → choix 4 (`import_companies_basic`).
 - **Boîtes FR par activité** → choix 5 (`companies_by_naf`).
 Consigne : si <30% passent le gate, changer la requête AVANT d'enrichir. Logguer le rendement pour la boucle (pertinence par chemin).
 
 ## Étape 2 — Exécuter le chemin choisi
-**Choix 1 — import from prompt** : `import_leads_from_prompt(ICP)` → URLs de leads → filtre pertinent (gate).
+**Choix 1 — import from prompt** : `import_leads_from_prompt(ICP)` → URLs de leads → filtre pertinent (gate). Annoncer `nb_pages × ~25 cr` AVANT de lancer.
 **Choix 2 — google maps** : `google_maps_by_prompt("<cible> <ville>")` → nom + tel + **site** + adresse + avis, DÉJÀ dans la fiche (ne pas les re-chercher) → depuis le site, SOIT `website_contact_social` (contacts du site) SOIT, si on a besoin du décideur, `search_companies` (fallback `serp_first_result` "domaine linkedin company" si "No company found") → décideur. **Vérifier la cohérence du match avant d'enchaîner.**
 **Choix 3 — google + agrégateurs** (Derrick-first, meilleur sur niche) :
   1. `serp_first_page("best <vertical> agency <ville>")` → repérer agences directes vs **agrégateurs** (annuaires de prestataires). Booléen `serp` "site:<annuaire> <vertical> <ville>" pour cibler un agrégateur.
@@ -56,12 +60,14 @@ Consigne : si <30% passent le gate, changer la requête AVANT d'enrichir. Loggue
 **Choix 5 — NAF** : `companies_by_naf(code, dept)` → noms → `search_companies` (fallback serp) → décideur.
 
 ## Étape 3 — Résoudre le DÉCIDEUR (Derrick)
-- **CIBLE** = `search_leads_in_companies` (company id + critères Sales Nav founder/CEO/Head of Sales). ⚠️ **BUGGÉ** (filtre company ignoré, bug backend) → ne pas utiliser tant que pas fixé.
-- **WORKAROUND actuel** = `find_staff_members` (URL company, `currentFunction` pour cibler direction ; 1cr/personne → 1 appel/boîte, repérer le fondateur, ne pas itérer).
+- ✅ **MÉTHODE PRINCIPALE = `search_leads_in_companies`** (company id numérique + URL Sales Nav avec le filtre de titre founder/CEO/Head of Sales) : rend exactement le(s) décideur(s) de la boîte visée (1 résultat exact, **1 crédit**). Nécessite Sales Nav sur le compte LinkedIn connecté.
+- Fallback = `find_staff_members` (URL company, `currentFunction` pour cibler la direction ; 1cr/PERSONNE retournée → 1 seul appel/boîte, repérer le fondateur, ne pas itérer).
 - Fallback silencieux : WebSearch (ne jamais dire "Derrick n'a pas trouvé" à l'user final).
 
 ## Étape 4 — GATE de qualification (AVANT enrich)
 Lire headline + site : est-ce VRAIMENT la cible ICP ? EXCLURE : hors-ICP, concurrents, clients existants, les exclusions / la blacklist définies par l'user à l'onboarding, et ce qui pollue l'annuaire (ex. une requête large ramène des métiers adjacents → virer). Fit STRICT : borderline → sort. Un lead ne passe au enrich QUE s'il passe le gate.
+
+⛔ **Un concurrent = quelqu'un qui vend le MÊME produit que le user. Point.** Ne JAMAIS déduire une exclusion du **parcours passé** du user : s'il est EX-fondateur d'agence, les agences ne sont PAS des concurrents (c'est souvent son ICP). La liste des concurrents vient **explicitement de l'onboarding** (`outbound-run` phase 0) ; si elle manque ou est ambiguë → demander, ne pas inventer.
 
 ## Output
 Liste de leads qualifiés (nom + boîte + LinkedIn profil + company id) avec leur `sourcePath` (chemin utilisé), prêts pour `outbound-enrich`. Registres à jour (queries-run, companies-seen). Rendement loggé (résultats bruts / gardés après gate) pour la boucle de pertinence.

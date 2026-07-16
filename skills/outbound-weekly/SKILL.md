@@ -15,7 +15,7 @@ description: >-
 But : fermer la boucle. L'outil d'envoi dit QUI a répondu ; c'est le croisement **réponse × ledger** qui dit **quel signal / angle / chemin convertit**, et nourrit le copy + le sourcing suivants.
 
 ## Pré-requis
-- Nos campagnes = celles portant le préfixe défini par l'user à l'onboarding (filtrer STRICTEMENT dessus, jamais l'inbox global d'un workspace partagé).
+- Nos campagnes = celles portant le préfixe défini par l'user à l'onboarding (filtrer STRICTEMENT dessus, jamais l'inbox global).
 - Ledger : `ledger/leads.jsonl` (chaque lead porte `variant`, `signalType`, `sourcePath`), `copy-lessons.md`, `companies-seen.jsonl`.
 
 ## Étape 1 — Récupérer les réponses de la semaine (par campagne)
@@ -48,7 +48,7 @@ Pour chaque répondant **positif** :
 3. **Trouver les leads (décideurs) derrière** ces boîtes : c'est la MÊME logique que `outbound-source` (divers chemins selon ce qu'on obtient : nom→`search_companies`, fallback serp/web, résolution décideur via `find_staff_members`/`search_leads_in_companies`, vérification de cohérence du match, gate). Le lookalike n'est pas un tunnel figé : selon ce que `find_similar_companies` rend (id, nom, site), on route vers le bon chemin, exactement comme à l'import.
 4. **La différence = le CONTEXTE d'apprentissage impulse le choix de la méthode** : on privilégie le chemin/le signal/l'angle qui a le mieux CONVERTI (pas juste passé le gate). Ex. si "signal X via chemin Y" a le meilleur taux de réponse positive, le lookalike vise ce type de boîtes par ce chemin en priorité.
 5. Gate + **dédup contre `companies-seen.jsonl`/`leads.jsonl`** (jamais re-scraper/re-contacter).
-**Volume boucle : 20 à 40 nouveaux leads par cycle** (le 1er sourcing hors boucle visait ~50). Injecter en tête du pipeline (`outbound-source`→`enrich`→`copy`→`push`).
+**Volume boucle : 20 à 40 nouveaux leads par cycle** (le 1er sourcing hors boucle vise ~25). Injecter en tête du pipeline (`outbound-source`→`enrich`→`copy`→`push`).
 Optionnel : régénérer un meilleur prompt/URL de sourcing à partir du profil-type des répondants positifs.
 
 ## Voies de la boucle (figées)
