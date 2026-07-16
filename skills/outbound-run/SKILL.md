@@ -62,8 +62,19 @@ Mapping attributs + split A/B + vérif des URLs post-push. Leads dans l'audience
 ## Phase 6 — LAUNCH (manuel user)
 Pas de tool MCP pour lancer/créer une campagne → le launch reste un clic de l'user. L'orchestrateur s'arrête ici et confirme ce qui reste à faire côté user (renommer/vérifier blocs, attacher audience, enregistrer voice, lancer).
 
-## Phase 7 — BOUCLE → skill `outbound-weekly` (routine hebdo séparée)
-Une fois lancé : review hebdo (réponses pos/neg/neutre × ledger → pertinence par signal/chemin → copy-lessons + amélioration + lookalike). À planifier en routine (cron) démarrant après le launch.
+## Phase 7 — BOUCLE → skill `outbound-weekly` ⛔ À PLANIFIER, PAS À MENTIONNER
+Review hebdo : réponses pos/neg/neutre × ledger → pertinence par signal/chemin → copy-lessons + amélioration + lookalike.
+⛔ **Une boucle qu'il faut penser à lancer à la main ne tourne jamais** — or c'est LE différenciateur du flow (« il apprend de vos réponses »). Donc **juste après le launch, PROPOSER de la planifier**, ne pas se contenter de l'évoquer :
+- **Si l'environnement du user permet les tâches planifiées** → proposer de créer la routine hebdo et la créer s'il accepte.
+- **Sinon** → le dire clairement et convenir d'un rappel : « relancez `outbound-weekly` chaque lundi ». Ne jamais laisser croire que la boucle tournera toute seule si rien ne la déclenche.
+
+Le prompt de la routine doit être **auto-suffisant** (chaque run démarre sans mémoire de la conversation) et contenir :
+1. ⛔ **CHECK des connexions en étape 0** : appeler un tool léger de l'outil d'envoi → **si indisponible (run headless, auth expirée), prévenir le user et STOP**. Jamais de fallback, jamais d'analyse de mémoire.
+2. Le **périmètre STRICT** (les campagnes du user uniquement, jamais l'inbox global), les identifiants de campagne/audience, et le rappel qu'elle **ANALYSE et PROPOSE** : elle n'envoie rien, ne lance rien, ne pousse aucun lead.
+3. La **réserve statistique** : sur un petit volume → hypothèses, jamais de conclusions.
+
+⛔ **Faire lancer la routine UNE FOIS à la main après l'avoir créée.** Les approbations de tools obtenues pendant un run sont mémorisées et rejouées aux runs suivants. Sans ce premier run manuel, une routine qui utilise un **connecteur distant (MCP)** se bloque sur une demande de permission que **personne ne verra passer** au petit matin : la boucle a l'air planifiée, et ne tourne jamais. Ce run à blanc vérifie aussi le garde-fou des connexions et le comportement à vide (aucune réponse encore = « pas assez de matière », surtout pas une tendance inventée).
+**Timing** : lundi matin (bilan de la semaine écoulée).
 
 ## Garde-fous
 Le flow PROPOSE et fait valider aux étapes sensibles (sourcing, copy, launch) ; il n'envoie jamais seul. Jamais de fausse perso.
