@@ -14,7 +14,7 @@ Enchaîne le moteur. Chaque étape = une skill dédiée (`outbound-source`, `out
 
 ## Phase 0 — ONBOARDING (1re fois / plugin)
 Capter le SPÉCIFIQUE du user (le moteur est générique). Les 8 étapes du mini-onboarding :
-1. **Connexions** : Derrick (moteur data, requis) + outil d'envoi (Lemlist et autres à venir ; sinon fallback export CSV/API). Clés en secrets locaux, jamais dans le plugin.
+1. **Connexions** : Derrick (moteur data, requis) + outil d'envoi (La Growth Machine aujourd'hui ; Lemlist et autres à venir ; sinon fallback export CSV/API). Clés en secrets locaux, jamais dans le plugin.
 2. **Offre + ICP PRÉCIS** : déduire du site + questions → forcer taille + spécialité + cible prioritaire + fallback de rôle (refuser le vague).
 3. **Produit/service vendu** : ce que le user vend (le moteur s'y adapte, il ne vend pas un produit en dur).
 4. **Style/voix** : `outbound-copy` analyse les conversations Claude passées du user (en le disant) → exemples → validation.

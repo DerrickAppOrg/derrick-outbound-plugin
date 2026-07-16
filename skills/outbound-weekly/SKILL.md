@@ -15,7 +15,7 @@ description: >-
 But : fermer la boucle. L'outil d'envoi dit QUI a répondu ; c'est le croisement **réponse × ledger** qui dit **quel signal / angle / chemin convertit**, et nourrit le copy + le sourcing suivants.
 
 ## Pré-requis
-- Nos campagnes = celles portant le préfixe défini par le user à l'onboarding (filtrer STRICTEMENT dessus, jamais l'inbox global d'un workspace partagé).
+- Nos campagnes = celles portant le préfixe défini par l'user à l'onboarding (filtrer STRICTEMENT dessus, jamais l'inbox global d'un workspace partagé).
 - Ledger : `ledger/leads.jsonl` (chaque lead porte `variant`, `signalType`, `sourcePath`), `copy-lessons.md`, `companies-seen.jsonl`.
 
 ## Étape 1 — Récupérer les réponses de la semaine (par campagne)
@@ -38,16 +38,35 @@ Agréger les réponses classées par : **variant A/B**, **signalType** (news/com
 - quel CHEMIN de sourcing ramène les leads qui répondent (boucle "pertinence pas coût" de `outbound-source`).
 Écrire les verdicts dans `leads.jsonl` (champ `reply`: positive/negative/neutral + citation) et les enseignements datés dans `copy-lessons.md`.
 
-## Étape 4 — Proposer des améliorations de copy (phase 10)
+## Étape 4 — Proposer des améliorations de copy
 À partir des gagnants/perdants : proposer 2-3 ajustements concrets de copy pour le prochain batch (ex. "les messages 'coût data' surperforment 'qualité data' → prioriser l'angle coût"). Passer toute nouvelle formulation au gate de `outbound-copy` (check mécanique + humanize + juge en contexte vierge). Ne jamais inventer un enseignement non soutenu par les données.
 
-## Étape 5 — Lookalike sur les positifs (phase 11)
+## Étape 5 — Lookalike sur les positifs — RÉUTILISE la logique d'import de `outbound-source`
 Pour chaque répondant **positif** :
 1. Récupérer sa boîte (companyName / linkedinId depuis le dossier d'enrich).
 2. `find_similar_companies(linkedinId)` (Derrick) → entreprises similaires.
-3. Gate + **dédup contre `companies-seen.jsonl`** (jamais re-scraper) → nouvelles boîtes.
-4. Les injecter en tête du pipeline de sourcing (elles ressemblent à ce qui convertit).
+3. **Trouver les leads (décideurs) derrière** ces boîtes : c'est la MÊME logique que `outbound-source` (divers chemins selon ce qu'on obtient : nom→`search_companies`, fallback serp/web, résolution décideur via `find_staff_members`/`search_leads_in_companies`, vérification de cohérence du match, gate). Le lookalike n'est pas un tunnel figé : selon ce que `find_similar_companies` rend (id, nom, site), on route vers le bon chemin, exactement comme à l'import.
+4. **La différence = le CONTEXTE d'apprentissage impulse le choix de la méthode** : on privilégie le chemin/le signal/l'angle qui a le mieux CONVERTI (pas juste passé le gate). Ex. si "signal X via chemin Y" a le meilleur taux de réponse positive, le lookalike vise ce type de boîtes par ce chemin en priorité.
+5. Gate + **dédup contre `companies-seen.jsonl`/`leads.jsonl`** (jamais re-scraper/re-contacter).
+**Volume boucle : 20 à 40 nouveaux leads par cycle** (le 1er sourcing hors boucle visait ~50). Injecter en tête du pipeline (`outbound-source`→`enrich`→`copy`→`push`).
 Optionnel : régénérer un meilleur prompt/URL de sourcing à partir du profil-type des répondants positifs.
+
+## Voies de la boucle (figées)
+Selon CE QUE l'apprentissage révèle, on choisit — faisabilité Derrick vérifiée :
+| # | Voie | Faisable | Quand l'apprentissage montre que… |
+|---|---|---|---|
+| 1 | **Lookalike entreprise** → résoudre décideurs | ✅ `find_similar_companies` | les BOÎTES d'un profil convertissent |
+| 2 | **Refaire le chemin gagnant** (autres villes/verticaux/annuaires) | ✅ tous les imports Derrick | un CHEMIN de sourcing convertit (filon à étendre) |
+| 3 | **Sourcing par SIGNAL** | ✅ news via `google_news` ; le reste (voir liste) via **web_search Claude** | un TYPE DE SIGNAL convertit, peu importe la boîte |
+| 4 | **ICP raffiné** → relancer `outbound-source` | ✅ imports Derrick | un pattern d'ICP net se dégage sur la même cible |
+| 5 | **Élargir dans les mêmes boîtes** (autres décideurs) | ✅ `find_staff_members` | les boîtes cibles ont plusieurs décideurs |
+| 6 | **NOUVEL ICP (autre segment) = 2e FLOW COMPLET** | ✅ tout `outbound-source`, mais nouveau flow | on a un **process SCALABLE prouvé sur l'ICP 1** → on GARDE le flow ICP 1 qui tourne ET on crée un **2e flow complet** : 2e campagne + 2e ton/voix + 2e séquence + 2e messaging. ⛔ **VALIDATION USER OBLIGATOIRE** (mini-onboarding du nouveau segment : ICP + ton/voix). |
+
+**Signaux à chercher via web_search Claude (voie 3)** : changement de poste récent (job change), levée de fonds, recrutement (SDR / sales / hiring), rachat / acquisition, forte croissance / nouveau bureau, lancement de produit. `google_news` reste la voie native pour l'actu/rachat.
+
+Une voie "engagers d'un post LinkedIn" a été écartée : elle nécessite d'ajouter l'URL du post à la main → pas automatisable dans la boucle.
+
+Toutes les voies (sauf la 6) convergent sur : gate → dédup → enrich → copy → push, **20-40 nouveaux/cycle**. La voie 6 est un flow parallèle distinct.
 
 ## Garde-fous
 - Filtre STRICT sur nos campagnes (préfixe du user), jamais l'inbox partagé.

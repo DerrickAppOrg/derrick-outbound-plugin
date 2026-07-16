@@ -3,7 +3,7 @@ name: outbound-sequence
 description: >-
   Recommande la structure de séquence outbound (étape SÉQUENCE du flow). NE manipule PAS l'outil d'envoi :
   elle CONSEILLE dans le chat (canal, nombre de messages, espacement, branches) et livre le contenu bloc par
-  bloc ; le user monte la séquence lui-même dans son outil (Lemlist / autre outil d'envoi). Déclencheurs :
+  bloc ; le user monte la séquence lui-même dans son outil (La Growth Machine / Lemlist / autre). Déclencheurs :
   "monte la séquence", "structure la campagne", ou appelée dans le flow.
 ---
 
